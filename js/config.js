@@ -40,17 +40,17 @@ window.DIANA_CONFIG = {
     registrationIntro: "Completa tus datos para iniciar tu registro. Diana podrá ponerse en contacto contigo para continuar el proceso y compartirte los detalles de acceso."
   },
   speaker: {
-    publicName: "Diana Guerrero",
-    role: "Asesora Patrimonial",
-    experience: "Más de cinco años de experiencia en el sector",
-    email: "dianaguerrero.asesorpatrimonial@gmail.com",
-    whatsappDisplay: "+52 444 121 0220",
-    whatsappNumber: "524441210220",
-    portrait: "assets/images/diana-guerrero.png",
-    logo: "assets/icons/logo-diana.png",
-    // Pendiente de verificación. Mantener como arreglo vacío para no mostrar credenciales ficticias.
-    credentials: []
-  },
+  publicName: "Diana Guerrero",
+  role: "Asesora Patrimonial",
+  experience: "Más de cinco años de experiencia en el sector",
+  email: "dianaguerrero.asesorpatrimonial@gmail.com",
+  whatsappDisplay: "+52 444 386 3661",
+  whatsappNumber: "524443863661",
+  portrait: "assets/images/diana-guerrero.png",
+  logo: "assets/icons/logo-diana.png",
+  // Pendiente de verificación. Mantener como arreglo vacío para no mostrar credenciales ficticias.
+  credentials: []
+},
   social: {
     // No publicar enlaces hasta verificar URL reales.
     facebook: null,
