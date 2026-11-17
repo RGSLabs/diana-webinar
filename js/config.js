@@ -44,8 +44,8 @@ window.DIANA_CONFIG = {
   role: "Asesora Patrimonial",
   experience: "Más de cinco años de experiencia en el sector",
   email: "dianaguerrero.asesorpatrimonial@gmail.com",
-  whatsappDisplay: "+52 444 386 3661",
-  whatsappNumber: "524443863661",
+  whatsappDisplay: "+52 1 444 121 0220",
+  whatsappNumber: "5214441210220",
   portrait: "assets/images/diana-guerrero.png",
   logo: "assets/icons/logo-diana.png",
   // Pendiente de verificación. Mantener como arreglo vacío para no mostrar credenciales ficticias.
