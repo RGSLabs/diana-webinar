@@ -4,7 +4,7 @@
  */
 window.DIANA_CONFIG = {
   app: {
-    mode: "development", // "development" | "production". En development no se confirma registro ni se abre WhatsApp.
+    mode: "production", // "development" | "production". En development no se confirma registro ni se abre WhatsApp.
     source: "landing-webinar-pensiones",
     reducedMotionSafe: true
   },
