@@ -73,7 +73,7 @@ window.DIANA_CONFIG = {
   },
   backend: {
     // IMPORTANTE: primera entrega sin backend real. Dejar null evita falsos registros.
-    endpoint: null,
+    endpoint: "https://script.google.com/macros/s/AKfycbyXdCLmmdtVac8ezQ4Kmja6QjKQB5lCAlYX4dZzJfRDXs0tFvZ2ZJF5_bbSc8IWhoeirg/exec",
     expectedResponse: {
       ok: true,
       registrationId: "identificador-aleatorio-devuelto-por-apps-script"
