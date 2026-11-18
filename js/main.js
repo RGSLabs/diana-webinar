@@ -23,6 +23,13 @@
   ready(() => {
     root.classList.add("js-ready");
 
+    if (!CONFIG) {
+      console.error("No se encontró window.DIANA_CONFIG. Revisa js/config.js.");
+      initRevealObserver();
+      initFaq();
+      return;
+    }
+
     initYear();
     hydrateContent();
     initNavigation();
@@ -31,18 +38,23 @@
     initWhatsAppLinks();
     initRevealObserver();
     initParallax();
+    initFaq();
   });
 
   function initYear() {
     const year = $("#current-year");
+
     if (year) {
-      year.textContent = String(CONFIG.legal.copyrightYear || new Date().getFullYear());
+      year.textContent = String(
+        CONFIG.legal.copyrightYear || new Date().getFullYear()
+      );
     }
   }
 
   function hydrateContent() {
     const setText = (selector, value) => {
       const element = $(selector);
+
       if (element && typeof value === "string") {
         element.textContent = value;
       }
@@ -85,7 +97,9 @@
       link.textContent = CONFIG.speaker.email;
     });
 
-    const whatsappDisplayLinks = $$(".speaker__facts a[href*='wa.me'], .footer__contact a[href*='wa.me']");
+    const whatsappDisplayLinks = $$(
+      ".speaker__facts a[href*='wa.me'], .footer__contact a[href*='wa.me']"
+    );
 
     whatsappDisplayLinks.forEach((link) => {
       link.href = `https://wa.me/${CONFIG.speaker.whatsappNumber}`;
@@ -109,6 +123,7 @@
     }
   }
 
+  /* Menú con apertura y cierre animados */
   function initNavigation() {
     const nav = $("[data-nav]");
     const toggle = $("[data-menu-toggle]");
@@ -118,36 +133,87 @@
 
     const links = $$("a[href^='#']", panel);
     let lastFocused = null;
+    let closeTimer = null;
 
     const openMenu = () => {
+      window.clearTimeout(closeTimer);
+
       lastFocused = doc.activeElement;
+
+      panel.removeAttribute("hidden");
+      panel.removeAttribute("inert");
 
       nav.classList.add("is-open");
       toggle.setAttribute("aria-expanded", "true");
-      panel.removeAttribute("hidden");
+      toggle.setAttribute("aria-label", "Cerrar menú");
+
+      // Permite que el navegador registre el estado inicial antes de animar.
+      panel.classList.remove("is-visible");
+      void panel.offsetHeight;
 
       window.requestAnimationFrame(() => {
         panel.classList.add("is-visible");
       });
 
       const first = links[0] || toggle;
-      first.focus({ preventScroll: true });
+
+      window.setTimeout(() => {
+        first.focus({ preventScroll: true });
+      }, prefersReducedMotion.matches ? 0 : 30);
     };
 
     const closeMenu = (restoreFocus = true) => {
+      if (panel.hasAttribute("hidden")) return;
+
+      window.clearTimeout(closeTimer);
+
       nav.classList.remove("is-open");
       toggle.setAttribute("aria-expanded", "false");
-      panel.classList.remove("is-visible");
-      panel.setAttribute("hidden", "");
+      toggle.setAttribute("aria-label", "Abrir menú");
 
-      if (restoreFocus && lastFocused && typeof lastFocused.focus === "function") {
+      panel.classList.remove("is-visible");
+      panel.setAttribute("inert", "");
+
+      const finishClose = () => {
+        panel.setAttribute("hidden", "");
+        panel.removeAttribute("inert");
+      };
+
+      if (prefersReducedMotion.matches) {
+        finishClose();
+      } else {
+        // Respaldo por si transitionend no se dispara.
+        closeTimer = window.setTimeout(finishClose, 320);
+
+        panel.addEventListener("transitionend", (event) => {
+          if (
+            event.target === panel &&
+            event.propertyName === "opacity" &&
+            !panel.classList.contains("is-visible")
+          ) {
+            window.clearTimeout(closeTimer);
+            finishClose();
+          }
+        }, { once: true });
+      }
+
+      if (
+        restoreFocus &&
+        lastFocused &&
+        typeof lastFocused.focus === "function"
+      ) {
         lastFocused.focus({ preventScroll: true });
       }
     };
 
     toggle.addEventListener("click", () => {
       const isOpen = toggle.getAttribute("aria-expanded") === "true";
-      isOpen ? closeMenu(false) : openMenu();
+
+      if (isOpen) {
+        closeMenu(false);
+      } else {
+        openMenu();
+      }
     });
 
     links.forEach((link) => {
@@ -192,6 +258,7 @@
     }, { passive: true });
   }
 
+  /* Desplazamiento a secciones */
   function initAnchorButtons() {
     $$("[data-scroll-target]").forEach((control) => {
       control.addEventListener("click", (event) => {
@@ -210,6 +277,7 @@
     });
   }
 
+  /* Selector de horarios */
   function initScheduleChoices() {
     const choices = $$("[data-schedule-choice]");
     if (!choices.length) return;
@@ -230,11 +298,10 @@
     });
   }
 
+  /* Enlaces de WhatsApp */
   function initWhatsAppLinks() {
     $$("[data-whatsapp-cta]").forEach((link) => {
-      link.addEventListener("click", () => {
-        updateWhatsAppLinks();
-      });
+      link.addEventListener("click", updateWhatsAppLinks);
     });
 
     updateWhatsAppLinks();
@@ -256,7 +323,10 @@
       }
     }
 
-    const url = new URL(`https://wa.me/${CONFIG.speaker.whatsappNumber}`);
+    const url = new URL(
+      `https://wa.me/${CONFIG.speaker.whatsappNumber}`
+    );
+
     url.searchParams.set("text", message);
 
     $$("[data-whatsapp-cta]").forEach((link) => {
@@ -266,11 +336,45 @@
     });
   }
 
+  /* FAQ: permite varias respuestas abiertas y anima su contenido */
+  function initFaq() {
+    const items = $$(".faq details");
+
+    if (!items.length) return;
+
+    items.forEach((details) => {
+      const summary = $("summary", details);
+      if (!summary) return;
+
+      // Evita envolver dos veces si la función se inicializa de nuevo.
+      if ($(".faq__answer", details)) return;
+
+      const answer = doc.createElement("div");
+      answer.className = "faq__answer";
+
+      const inner = doc.createElement("div");
+      inner.className = "faq__answer-inner";
+
+      const content = Array.from(details.children).filter(
+        (child) => child !== summary
+      );
+
+      content.forEach((child) => inner.appendChild(child));
+
+      answer.appendChild(inner);
+      details.appendChild(answer);
+    });
+  }
+
+  /* Aparición de elementos al entrar en pantalla */
   function initRevealObserver() {
     const items = $$(".reveal");
     if (!items.length) return;
 
-    if (prefersReducedMotion.matches || !("IntersectionObserver" in window)) {
+    if (
+      prefersReducedMotion.matches ||
+      !("IntersectionObserver" in window)
+    ) {
       items.forEach((item) => item.classList.add("is-visible"));
       return;
     }
@@ -283,24 +387,31 @@
         }
       });
     }, {
-      threshold: 0.16,
-      rootMargin: "0px 0px -8% 0px"
+      threshold: 0.12,
+      rootMargin: "0px 0px -6% 0px"
     });
 
     items.forEach((item, index) => {
       item.style.setProperty(
         "--reveal-delay",
-        `${Math.min(index % 6, 5) * 70}ms`
+        `${Math.min(index % 5, 4) * 60}ms`
       );
 
       observer.observe(item);
     });
   }
 
+  /* Parallax ligero */
   function initParallax() {
     const items = $$("[data-parallax]");
 
-    if (!items.length || prefersReducedMotion.matches || !motionOK()) return;
+    if (
+      !items.length ||
+      prefersReducedMotion.matches ||
+      !motionOK()
+    ) {
+      return;
+    }
 
     let ticking = false;
 
